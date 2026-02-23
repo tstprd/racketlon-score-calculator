@@ -62,6 +62,21 @@ function initScoreInputs() {
       input.select();
     });
   });
+  
+  // Quick 21 buttons
+  const btn21s = document.querySelectorAll('.btn-21');
+  btn21s.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.target;
+      const cell = btn.closest('.score-cell');
+      const input = cell.querySelector(`.${target}`);
+      if (input) {
+        input.value = 21;
+        updateTotals();
+        updateAnalysis();
+      }
+    });
+  });
 }
 
 /**
