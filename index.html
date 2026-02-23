@@ -62,6 +62,7 @@
       border-bottom: 1px solid #0f3460;
     }
     .sport-row:last-child { border-bottom: none; }
+    .sport-row.has-error .sport-name { color: #ff4757; }
     
     .sport-name { flex: 1; font-size: 0.95rem; }
     
@@ -85,6 +86,10 @@
     .score-input::-webkit-outer-spin-button,
     .score-input::-webkit-inner-spin-button { -webkit-appearance: none; }
     .score-input:focus { outline: none; border-color: #e94560; }
+    .score-input.error { 
+      border-color: #ff4757 !important; 
+      background: rgba(255, 71, 87, 0.2);
+    }
     
     .btn-21 {
       width: 36px;
@@ -133,6 +138,27 @@
     .delta-positive { color: #00d26a; }
     .delta-negative { color: #e94560; }
     .delta-zero { color: #ffc107; }
+    
+    .errors-box {
+      background: rgba(255, 71, 87, 0.15);
+      border: 2px solid #ff4757;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    .errors-box h3 {
+      color: #ff4757;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+    .errors-box ul {
+      list-style: none;
+      font-size: 0.85rem;
+      color: #ff6b6b;
+    }
+    .errors-box li { padding: 4px 0; }
+    .errors-box li::before { content: "⚠️ "; }
+    .hidden { display: none; }
     
     .btn-clear {
       width: 100%;
@@ -198,7 +224,7 @@
       </div>
 
       <div class="scores-grid">
-        <div class="sport-row" data-sport="tabletennis">
+        <div class="sport-row" data-sport="tabletennis" id="row-tt">
           <span class="sport-name">🏓 Ping-pong</span>
           <div class="score-group">
             <input type="number" class="score-input" id="tt-a" min="0" max="21" inputmode="numeric">
@@ -211,7 +237,7 @@
           </div>
         </div>
         
-        <div class="sport-row" data-sport="badminton">
+        <div class="sport-row" data-sport="badminton" id="row-bad">
           <span class="sport-name">🏸 Badminton</span>
           <div class="score-group">
             <input type="number" class="score-input" id="bad-a" min="0" max="21" inputmode="numeric">
@@ -224,7 +250,7 @@
           </div>
         </div>
         
-        <div class="sport-row" data-sport="squash">
+        <div class="sport-row" data-sport="squash" id="row-sq">
           <span class="sport-name">🎯 Squash</span>
           <div class="score-group">
             <input type="number" class="score-input" id="sq-a" min="0" max="21" inputmode="numeric">
@@ -237,7 +263,7 @@
           </div>
         </div>
         
-        <div class="sport-row" data-sport="tennis">
+        <div class="sport-row" data-sport="tennis" id="row-ten">
           <span class="sport-name">🎾 Tennis</span>
           <div class="score-group">
             <input type="number" class="score-input" id="ten-a" min="0" max="21" inputmode="numeric">
@@ -256,6 +282,11 @@
           <span class="score-sep">-</span>
           <span class="total-score" id="totalB">0</span>
         </div>
+      </div>
+
+      <div id="errorsBox" class="errors-box hidden">
+        <h3>⚠️ Scores invalides</h3>
+        <ul id="errorsList"></ul>
       </div>
 
       <div class="delta-display">
@@ -279,7 +310,13 @@
 
   <script src="scoring.js"></script>
   <script>
-    // Simple inline handlers
+    const SPORTS = [
+      { id: 'tt', name: 'Ping-pong', row: 'row-tt' },
+      { id: 'bad', name: 'Badminton', row: 'row-bad' },
+      { id: 'sq', name: 'Squash', row: 'row-sq' },
+      { id: 'ten', name: 'Tennis', row: 'row-ten' }
+    ];
+    
     function set21(id) {
       document.getElementById(id).value = 21;
       update();
@@ -292,24 +329,108 @@
       update();
     }
     
-    function update() {
-      // Get scores
-      const scores = {
-        tabletennis: getScore('tt'),
-        badminton: getScore('bad'),
-        squash: getScore('sq'),
-        tennis: getScore('ten')
-      };
+    function getScoreRaw(prefix) {
+      const aEl = document.getElementById(prefix + '-a');
+      const bEl = document.getElementById(prefix + '-b');
+      const a = aEl.value;
+      const b = bEl.value;
+      return { a, b, aEl, bEl };
+    }
+    
+    function validateScores() {
+      const errors = [];
+      let lastFilledIndex = -1;
       
-      // Calculate totals
-      let totalA = 0, totalB = 0;
-      for (const [sport, score] of Object.entries(scores)) {
-        if (score) {
-          const [a, b] = score.split('-').map(Number);
-          totalA += a;
-          totalB += b;
+      // Clear all error states
+      document.querySelectorAll('.score-input').forEach(el => el.classList.remove('error'));
+      document.querySelectorAll('.sport-row').forEach(el => el.classList.remove('has-error'));
+      
+      SPORTS.forEach((sport, index) => {
+        const { a, b, aEl, bEl } = getScoreRaw(sport.id);
+        const aNum = parseInt(a);
+        const bNum = parseInt(b);
+        const hasA = a !== '';
+        const hasB = b !== '';
+        const hasBoth = hasA && hasB;
+        const hasAny = hasA || hasB;
+        
+        // Check if this sport is filled
+        if (hasBoth) {
+          lastFilledIndex = index;
+          
+          // Rule 1: Both can't be 21
+          if (aNum === 21 && bNum === 21) {
+            errors.push({ sport: sport.name, msg: 'Les deux joueurs ne peuvent pas avoir 21' });
+            aEl.classList.add('error');
+            bEl.classList.add('error');
+            document.getElementById(sport.row).classList.add('has-error');
+          }
+          // Rule 2: At least one must be 21 (set is finished)
+          else if (aNum !== 21 && bNum !== 21) {
+            errors.push({ sport: sport.name, msg: 'Un joueur doit avoir 21 pour finir le set' });
+            aEl.classList.add('error');
+            bEl.classList.add('error');
+            document.getElementById(sport.row).classList.add('has-error');
+          }
         }
+        // Only one score entered
+        else if (hasAny) {
+          errors.push({ sport: sport.name, msg: 'Score incomplet' });
+          if (hasA) aEl.classList.add('error');
+          if (hasB) bEl.classList.add('error');
+          document.getElementById(sport.row).classList.add('has-error');
+        }
+      });
+      
+      // Rule 3: Check for gaps (e.g., ping-pong empty but squash filled)
+      let foundGap = false;
+      SPORTS.forEach((sport, index) => {
+        const { a, b } = getScoreRaw(sport.id);
+        const hasBoth = a !== '' && b !== '';
+        
+        if (hasBoth && foundGap) {
+          errors.push({ sport: sport.name, msg: 'Remplir les sports dans l\'ordre' });
+          document.getElementById(sport.row).classList.add('has-error');
+          document.getElementById(sport.id + '-a').classList.add('error');
+          document.getElementById(sport.id + '-b').classList.add('error');
+        }
+        
+        if (!hasBoth && index < lastFilledIndex) {
+          foundGap = true;
+        }
+      });
+      
+      return errors;
+    }
+    
+    function update() {
+      // Validate
+      const errors = validateScores();
+      const errorsBox = document.getElementById('errorsBox');
+      const errorsList = document.getElementById('errorsList');
+      
+      if (errors.length > 0) {
+        errorsList.innerHTML = errors.map(e => `<li><strong>${e.sport}</strong>: ${e.msg}</li>`).join('');
+        errorsBox.classList.remove('hidden');
+      } else {
+        errorsBox.classList.add('hidden');
       }
+      
+      // Get valid scores only
+      const scores = {};
+      let totalA = 0, totalB = 0;
+      
+      SPORTS.forEach(sport => {
+        const { a, b } = getScoreRaw(sport.id);
+        const aNum = parseInt(a);
+        const bNum = parseInt(b);
+        
+        if (a !== '' && b !== '' && (aNum === 21 || bNum === 21) && !(aNum === 21 && bNum === 21)) {
+          scores[sport.id === 'tt' ? 'tabletennis' : sport.id === 'bad' ? 'badminton' : sport.id === 'sq' ? 'squash' : 'tennis'] = `${a}-${b}`;
+          totalA += aNum;
+          totalB += bNum;
+        }
+      });
       
       document.getElementById('totalA').textContent = totalA;
       document.getElementById('totalB').textContent = totalB;
@@ -334,24 +455,15 @@
         deltaEl.className = 'delta-zero';
       }
       
-      // Analysis
-      updateAnalysis(scores, playerA, playerB);
-    }
-    
-    function getScore(prefix) {
-      const a = document.getElementById(prefix + '-a').value;
-      const b = document.getElementById(prefix + '-b').value;
-      if (a !== '' && b !== '') {
-        return `${a}-${b}`;
-      }
-      return null;
+      // Analysis (only if no errors)
+      updateAnalysis(errors.length === 0 ? scores : {}, playerA, playerB);
     }
     
     function updateAnalysis(scores, playerA, playerB) {
       const container = document.getElementById('analysisContent');
       
-      if (!Object.values(scores).some(s => s !== null)) {
-        container.innerHTML = '<p class="placeholder">Entrez les scores pour voir l\'analyse</p>';
+      if (!Object.values(scores).some(s => s)) {
+        container.innerHTML = '<p class="placeholder">Entrez des scores valides pour voir l\'analyse</p>';
         return;
       }
       
