@@ -174,7 +174,7 @@ function generateInProgressAnalysis(result, playerA, playerB, scores) {
  */
 function analyzeLastSport(result, playerA, playerB, delta, sportLabel) {
   if (delta > 0) {
-    // A leads
+    // A leads - B needs to catch up
     if (delta > 21) {
       result.analysis.push({
         type: 'clinched',
@@ -186,24 +186,27 @@ function analyzeLastSport(result, playerA, playerB, delta, sportLabel) {
         message: `${playerB} doit faire 21-0 au ${sportLabel} pour aller au Gummiarm`
       });
     } else {
-      const bNeedsToWinBy = delta + 1;
+      // B needs to win by delta+1 to win
+      const bMinWinScore = 21 - delta - 1; // max A can have for B to win
+      const gummiScore = 21 - delta;
+      
       result.analysis.push({
         type: 'scenario',
-        message: `${playerB} doit gagner le ${sportLabel} avec +${bNeedsToWinBy} pts pour l'emporter (ex: 21-${21 - bNeedsToWinBy} minimum)`
+        message: `🏆 ${playerB} gagne si ${sportLabel} ≥ 21-${bMinWinScore}`
       });
       result.analysis.push({
         type: 'scenario',
-        message: `${playerA} doit limiter l'écart à ${delta - 1} pts ou moins pour gagner`
+        message: `🏆 ${playerA} gagne si ${sportLabel} ≤ 21-${bMinWinScore + 2} ou ${playerA} gagne le set`
       });
       if (delta <= 21) {
         result.analysis.push({
           type: 'gummiarm_scenario',
-          message: `Gummiarm si ${playerB} gagne exactement +${delta} pts (ex: 21-${21 - delta})`
+          message: `⚡ Gummiarm si ${sportLabel} = 21-${gummiScore}`
         });
       }
     }
   } else if (delta < 0) {
-    // B leads
+    // B leads - A needs to catch up
     const absDelta = Math.abs(delta);
     if (absDelta > 21) {
       result.analysis.push({
@@ -211,19 +214,22 @@ function analyzeLastSport(result, playerA, playerB, delta, sportLabel) {
         message: `${playerB} a déjà gagné ! Même un 21-0 au ${sportLabel} ne suffirait pas.`
       });
     } else {
-      const aNeedsToWinBy = absDelta + 1;
+      // A needs to win by absDelta+1 to win
+      const aMinWinScore = 21 - absDelta - 1; // max B can have for A to win
+      const gummiScore = 21 - absDelta;
+      
       result.analysis.push({
         type: 'scenario',
-        message: `${playerA} doit gagner le ${sportLabel} avec +${aNeedsToWinBy} pts pour l'emporter`
+        message: `🏆 ${playerA} gagne si ${sportLabel} ≥ 21-${aMinWinScore}`
       });
       result.analysis.push({
-        type: 'scenario', 
-        message: `${playerB} doit limiter l'écart à ${absDelta - 1} pts ou moins pour gagner`
+        type: 'scenario',
+        message: `🏆 ${playerB} gagne si ${sportLabel} ≤ 21-${aMinWinScore + 2} ou ${playerB} gagne le set`
       });
       if (absDelta <= 21) {
         result.analysis.push({
           type: 'gummiarm_scenario',
-          message: `Gummiarm si ${playerA} gagne exactement +${absDelta} pts`
+          message: `⚡ Gummiarm si ${sportLabel} = 21-${gummiScore}`
         });
       }
     }
@@ -235,7 +241,7 @@ function analyzeLastSport(result, playerA, playerB, delta, sportLabel) {
     });
     result.analysis.push({
       type: 'gummiarm_scenario',
-      message: `Gummiarm si le ${sportLabel} finit en égalité (ex: 21-21 après prolongation égale)`
+      message: `⚡ Gummiarm si égalité au ${sportLabel}`
     });
   }
 }
