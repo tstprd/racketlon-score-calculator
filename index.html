@@ -47,6 +47,14 @@
       cursor: pointer; -webkit-tap-highlight-color: transparent;
     }
     .btn-21:active { transform: scale(0.95); background: #ff6b6b; }
+    .btn-x {
+      width: 24px; height: 24px; border: none; border-radius: 6px;
+      background: transparent; color: #666; font-size: 0.9rem;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-x:hover { color: #ff4757; }
+    .btn-x:active { transform: scale(0.95); }
     .score-sep { margin: 0 8px; color: #888; font-weight: bold; }
     .total-row { display: flex; align-items: center; padding: 16px 0 8px; border-top: 2px solid #e94560; margin-top: 8px; }
     .total-row .sport-name { font-weight: bold; }
@@ -97,11 +105,13 @@
         <div class="sport-row" id="row-tt">
           <span class="sport-name">🏓 Ping-pong</span>
           <div class="score-group">
+            <button class="btn-x" onclick="clearCell('tt-a')">✕</button>
             <input type="number" class="score-input" id="tt-a" min="0" max="21" inputmode="numeric">
             <button class="btn-21" onclick="set21('tt-a')">21</button>
           </div>
           <span class="score-sep">-</span>
           <div class="score-group">
+            <button class="btn-x" onclick="clearCell('tt-b')">✕</button>
             <input type="number" class="score-input" id="tt-b" min="0" max="21" inputmode="numeric">
             <button class="btn-21" onclick="set21('tt-b')">21</button>
           </div>
@@ -109,11 +119,13 @@
         <div class="sport-row" id="row-bad">
           <span class="sport-name">🏸 Badminton</span>
           <div class="score-group">
+            <button class="btn-x" onclick="clearCell('bad-a')">✕</button>
             <input type="number" class="score-input" id="bad-a" min="0" max="21" inputmode="numeric">
             <button class="btn-21" onclick="set21('bad-a')">21</button>
           </div>
           <span class="score-sep">-</span>
           <div class="score-group">
+            <button class="btn-x" onclick="clearCell('bad-b')">✕</button>
             <input type="number" class="score-input" id="bad-b" min="0" max="21" inputmode="numeric">
             <button class="btn-21" onclick="set21('bad-b')">21</button>
           </div>
@@ -121,11 +133,13 @@
         <div class="sport-row" id="row-sq">
           <span class="sport-name">🎯 Squash</span>
           <div class="score-group">
+            <button class="btn-x" onclick="clearCell('sq-a')">✕</button>
             <input type="number" class="score-input" id="sq-a" min="0" max="21" inputmode="numeric">
             <button class="btn-21" onclick="set21('sq-a')">21</button>
           </div>
           <span class="score-sep">-</span>
           <div class="score-group">
+            <button class="btn-x" onclick="clearCell('sq-b')">✕</button>
             <input type="number" class="score-input" id="sq-b" min="0" max="21" inputmode="numeric">
             <button class="btn-21" onclick="set21('sq-b')">21</button>
           </div>
@@ -133,11 +147,13 @@
         <div class="sport-row" id="row-ten">
           <span class="sport-name">🎾 Tennis</span>
           <div class="score-group">
+            <button class="btn-x" onclick="clearCell('ten-a')">✕</button>
             <input type="number" class="score-input" id="ten-a" min="0" max="21" inputmode="numeric">
             <button class="btn-21" onclick="set21('ten-a')">21</button>
           </div>
           <span class="score-sep">-</span>
           <div class="score-group">
+            <button class="btn-x" onclick="clearCell('ten-b')">✕</button>
             <input type="number" class="score-input" id="ten-b" min="0" max="21" inputmode="numeric">
             <button class="btn-21" onclick="set21('ten-b')">21</button>
           </div>
@@ -178,6 +194,11 @@
 
     function set21(id) {
       document.getElementById(id).value = 21;
+      update();
+    }
+
+    function clearCell(id) {
+      document.getElementById(id).value = '';
       update();
     }
 
@@ -314,14 +335,6 @@
         const winner = delta > 0 ? playerA : playerB;
         html += `<div class="analysis-item winner">🏆 ${winner} a déjà gagné ! Avance insurmontable.</div>`;
       } else {
-        if (delta > 0) {
-          html += `<div class="analysis-item">${playerA} mène de ${delta} points</div>`;
-        } else if (delta < 0) {
-          html += `<div class="analysis-item">${playerB} mène de ${Math.abs(delta)} points</div>`;
-        } else {
-          html += `<div class="analysis-item">Égalité parfaite</div>`;
-        }
-
         const nextSport = ['tabletennis', 'badminton', 'squash', 'tennis'].find(s => !scores[s]);
         const nextLabel = {tabletennis: 'Ping-pong', badminton: 'Badminton', squash: 'Squash', tennis: 'Tennis'}[nextSport];
 
