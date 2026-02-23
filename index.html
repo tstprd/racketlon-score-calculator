@@ -2,145 +2,269 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#1a1a2e">
-  <meta name="description" content="Calculateur de scores Racketlon - Analysez vos matchs en temps réel">
+  <meta name="description" content="Calculateur de scores Racketlon">
   <title>Racketlon Calc</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏓</text></svg>">
-  <link rel="stylesheet" href="style.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #fff;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    
+    .container { max-width: 500px; margin: 0 auto; }
+    
+    header { text-align: center; margin-bottom: 20px; }
+    header h1 { font-size: 1.5rem; margin-bottom: 4px; }
+    header p { color: #888; font-size: 0.9rem; }
+    
+    .players-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .player-input { flex: 1; }
+    .player-input label { display: block; font-size: 0.75rem; color: #888; margin-bottom: 4px; }
+    .player-input input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #0f3460;
+      border-radius: 8px;
+      background: #16213e;
+      color: #fff;
+      font-size: 1rem;
+      text-align: center;
+    }
+    .player-input input:focus { outline: none; border-color: #e94560; }
+    
+    .vs { color: #e94560; font-weight: bold; padding-top: 18px; }
+    
+    .scores-grid {
+      background: #16213e;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .sport-row {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #0f3460;
+    }
+    .sport-row:last-child { border-bottom: none; }
+    
+    .sport-name { flex: 1; font-size: 0.95rem; }
+    
+    .score-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .score-input {
+      width: 50px;
+      padding: 8px 4px;
+      border: 2px solid #0f3460;
+      border-radius: 8px;
+      background: #1a1a2e;
+      color: #fff;
+      font-size: 1.1rem;
+      text-align: center;
+      -moz-appearance: textfield;
+    }
+    .score-input::-webkit-outer-spin-button,
+    .score-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .score-input:focus { outline: none; border-color: #e94560; }
+    
+    .btn-21 {
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 8px;
+      background: #e94560;
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-21:active { transform: scale(0.95); background: #ff6b6b; }
+    
+    .score-sep {
+      margin: 0 8px;
+      color: #888;
+      font-weight: bold;
+    }
+    
+    .total-row {
+      display: flex;
+      align-items: center;
+      padding: 16px 0 8px;
+      border-top: 2px solid #e94560;
+      margin-top: 8px;
+    }
+    .total-row .sport-name { font-weight: bold; }
+    .total-score {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #ff6b6b;
+      min-width: 50px;
+      text-align: center;
+    }
+    
+    .delta-display {
+      background: #0f3460;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    #deltaText { font-size: 1.1rem; font-weight: bold; }
+    .delta-positive { color: #00d26a; }
+    .delta-negative { color: #e94560; }
+    .delta-zero { color: #ffc107; }
+    
+    .btn-clear {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid #888;
+      border-radius: 12px;
+      background: transparent;
+      color: #888;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    .btn-clear:active { border-color: #e94560; color: #e94560; }
+    
+    .analysis-section {
+      background: #16213e;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .analysis-section h2 {
+      font-size: 1rem;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #0f3460;
+    }
+    
+    .analysis-item {
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      background: #0f3460;
+      border-radius: 8px;
+      border-left: 4px solid #e94560;
+      font-size: 0.95rem;
+    }
+    .analysis-item.winner { border-left-color: #00d26a; background: rgba(0,210,106,0.1); }
+    .analysis-item.gummiarm_scenario { border-left-color: #ffc107; background: rgba(255,193,7,0.1); }
+    .analysis-item.scenario { border-left-color: #00bcd4; }
+    
+    .placeholder { color: #888; text-align: center; font-style: italic; }
+    
+    footer { text-align: center; padding: 20px 0; color: #888; font-size: 0.8rem; }
+    footer a { color: #ff6b6b; text-decoration: none; }
+  </style>
 </head>
 <body>
   <div class="container">
     <header>
       <h1>🏓🏸🎾 Racketlon Calc</h1>
-      <p class="subtitle">Analyseur de match en temps réel</p>
+      <p>Calculateur de scores</p>
     </header>
 
     <main>
-      <!-- Tab navigation -->
-      <nav class="tabs">
-        <button class="tab active" data-tab="manual">✏️ Saisie manuelle</button>
-        <button class="tab" data-tab="photo">📷 Photo OCR</button>
-      </nav>
-
-      <!-- Manual entry tab -->
-      <section id="manual-tab" class="tab-content active">
-        <div class="players-row">
-          <div class="player-input">
-            <label for="playerA">Joueur A</label>
-            <input type="text" id="playerA" placeholder="Nom" value="">
-          </div>
-          <div class="vs">VS</div>
-          <div class="player-input">
-            <label for="playerB">Joueur B</label>
-            <input type="text" id="playerB" placeholder="Nom" value="">
-          </div>
+      <div class="players-row">
+        <div class="player-input">
+          <label>Joueur A</label>
+          <input type="text" id="playerA" placeholder="Nom">
         </div>
-
-        <div class="scores-grid">
-          <div class="score-row header">
-            <span class="sport-label"></span>
-            <span class="score-header" id="headerA">A</span>
-            <span class="score-sep"></span>
-            <span class="score-header" id="headerB">B</span>
-          </div>
-          
-          <div class="score-row" data-sport="tabletennis">
-            <span class="sport-label">🏓 Ping-pong</span>
-            <div class="score-cell">
-              <input type="number" class="score-input scoreA" min="0" max="21" placeholder="0">
-              <button type="button" class="btn-21" data-target="scoreA">21</button>
-            </div>
-            <span class="score-sep">-</span>
-            <div class="score-cell">
-              <input type="number" class="score-input scoreB" min="0" max="21" placeholder="0">
-              <button type="button" class="btn-21" data-target="scoreB">21</button>
-            </div>
-          </div>
-          
-          <div class="score-row" data-sport="badminton">
-            <span class="sport-label">🏸 Badminton</span>
-            <div class="score-cell">
-              <input type="number" class="score-input scoreA" min="0" max="21" placeholder="0">
-              <button type="button" class="btn-21" data-target="scoreA">21</button>
-            </div>
-            <span class="score-sep">-</span>
-            <div class="score-cell">
-              <input type="number" class="score-input scoreB" min="0" max="21" placeholder="0">
-              <button type="button" class="btn-21" data-target="scoreB">21</button>
-            </div>
-          </div>
-          
-          <div class="score-row" data-sport="squash">
-            <span class="sport-label">🎯 Squash</span>
-            <div class="score-cell">
-              <input type="number" class="score-input scoreA" min="0" max="21" placeholder="0">
-              <button type="button" class="btn-21" data-target="scoreA">21</button>
-            </div>
-            <span class="score-sep">-</span>
-            <div class="score-cell">
-              <input type="number" class="score-input scoreB" min="0" max="21" placeholder="0">
-              <button type="button" class="btn-21" data-target="scoreB">21</button>
-            </div>
-          </div>
-          
-          <div class="score-row" data-sport="tennis">
-            <span class="sport-label">🎾 Tennis</span>
-            <div class="score-cell">
-              <input type="number" class="score-input scoreA" min="0" max="21" placeholder="0">
-              <button type="button" class="btn-21" data-target="scoreA">21</button>
-            </div>
-            <span class="score-sep">-</span>
-            <div class="score-cell">
-              <input type="number" class="score-input scoreB" min="0" max="21" placeholder="0">
-              <button type="button" class="btn-21" data-target="scoreB">21</button>
-            </div>
-          </div>
-          
-          <div class="score-row total">
-            <span class="sport-label">📊 TOTAL</span>
-            <span class="total-score" id="totalA">0</span>
-            <span class="score-sep">-</span>
-            <span class="total-score" id="totalB">0</span>
-          </div>
+        <div class="vs">VS</div>
+        <div class="player-input">
+          <label>Joueur B</label>
+          <input type="text" id="playerB" placeholder="Nom">
         </div>
+      </div>
 
-        <div class="delta-display">
-          <span id="deltaText">Égalité</span>
+      <div class="scores-grid">
+        <div class="sport-row" data-sport="tabletennis">
+          <span class="sport-name">🏓 Ping-pong</span>
+          <div class="score-group">
+            <input type="number" class="score-input" id="tt-a" min="0" max="21" inputmode="numeric">
+            <button class="btn-21" onclick="set21('tt-a')">21</button>
+          </div>
+          <span class="score-sep">-</span>
+          <div class="score-group">
+            <input type="number" class="score-input" id="tt-b" min="0" max="21" inputmode="numeric">
+            <button class="btn-21" onclick="set21('tt-b')">21</button>
+          </div>
         </div>
         
-        <button type="button" id="clearAll" class="btn-clear">🗑️ Effacer tout</button>
-      </section>
-
-      <!-- Photo OCR tab -->
-      <section id="photo-tab" class="tab-content">
-        <div class="photo-section">
-          <label class="photo-button" for="photoInput">
-            📷 Prendre une photo ou choisir une image
-          </label>
-          <input type="file" id="photoInput" accept="image/*" capture="environment">
-          
-          <div id="photoPreview" class="photo-preview hidden">
-            <img id="previewImage" src="" alt="Aperçu">
-            <button id="processPhoto" class="btn-primary">🔍 Analyser avec OCR</button>
+        <div class="sport-row" data-sport="badminton">
+          <span class="sport-name">🏸 Badminton</span>
+          <div class="score-group">
+            <input type="number" class="score-input" id="bad-a" min="0" max="21" inputmode="numeric">
+            <button class="btn-21" onclick="set21('bad-a')">21</button>
           </div>
-          
-          <div id="ocrStatus" class="ocr-status hidden">
-            <div class="spinner"></div>
-            <span>Chargement de Tesseract.js...</span>
-          </div>
-          
-          <div id="ocrResult" class="ocr-result hidden">
-            <h3>Texte détecté :</h3>
-            <pre id="ocrText"></pre>
-            <button id="applyOcr" class="btn-secondary">Appliquer les scores</button>
+          <span class="score-sep">-</span>
+          <div class="score-group">
+            <input type="number" class="score-input" id="bad-b" min="0" max="21" inputmode="numeric">
+            <button class="btn-21" onclick="set21('bad-b')">21</button>
           </div>
         </div>
-      </section>
+        
+        <div class="sport-row" data-sport="squash">
+          <span class="sport-name">🎯 Squash</span>
+          <div class="score-group">
+            <input type="number" class="score-input" id="sq-a" min="0" max="21" inputmode="numeric">
+            <button class="btn-21" onclick="set21('sq-a')">21</button>
+          </div>
+          <span class="score-sep">-</span>
+          <div class="score-group">
+            <input type="number" class="score-input" id="sq-b" min="0" max="21" inputmode="numeric">
+            <button class="btn-21" onclick="set21('sq-b')">21</button>
+          </div>
+        </div>
+        
+        <div class="sport-row" data-sport="tennis">
+          <span class="sport-name">🎾 Tennis</span>
+          <div class="score-group">
+            <input type="number" class="score-input" id="ten-a" min="0" max="21" inputmode="numeric">
+            <button class="btn-21" onclick="set21('ten-a')">21</button>
+          </div>
+          <span class="score-sep">-</span>
+          <div class="score-group">
+            <input type="number" class="score-input" id="ten-b" min="0" max="21" inputmode="numeric">
+            <button class="btn-21" onclick="set21('ten-b')">21</button>
+          </div>
+        </div>
+        
+        <div class="total-row">
+          <span class="sport-name">📊 TOTAL</span>
+          <span class="total-score" id="totalA">0</span>
+          <span class="score-sep">-</span>
+          <span class="total-score" id="totalB">0</span>
+        </div>
+      </div>
 
-      <!-- Analysis results -->
-      <section id="analysis" class="analysis-section">
+      <div class="delta-display">
+        <span id="deltaText">Entrez les scores</span>
+      </div>
+      
+      <button class="btn-clear" onclick="clearAll()">🗑️ Effacer tout</button>
+
+      <section class="analysis-section">
         <h2>📈 Analyse</h2>
         <div id="analysisContent">
           <p class="placeholder">Entrez les scores pour voir l'analyse</p>
@@ -149,12 +273,121 @@
     </main>
 
     <footer>
-      <p>Racketlon Calc v1.0 • <a href="https://www.racketlon.net" target="_blank">Règles officielles</a></p>
+      <p>Racketlon Calc • <a href="https://www.racketlon.net" target="_blank">Règles FIR</a></p>
     </footer>
   </div>
 
   <script src="scoring.js"></script>
-  <script src="ocr.js"></script>
-  <script src="app.js"></script>
+  <script>
+    // Simple inline handlers
+    function set21(id) {
+      document.getElementById(id).value = 21;
+      update();
+    }
+    
+    function clearAll() {
+      document.getElementById('playerA').value = '';
+      document.getElementById('playerB').value = '';
+      document.querySelectorAll('.score-input').forEach(i => i.value = '');
+      update();
+    }
+    
+    function update() {
+      // Get scores
+      const scores = {
+        tabletennis: getScore('tt'),
+        badminton: getScore('bad'),
+        squash: getScore('sq'),
+        tennis: getScore('ten')
+      };
+      
+      // Calculate totals
+      let totalA = 0, totalB = 0;
+      for (const [sport, score] of Object.entries(scores)) {
+        if (score) {
+          const [a, b] = score.split('-').map(Number);
+          totalA += a;
+          totalB += b;
+        }
+      }
+      
+      document.getElementById('totalA').textContent = totalA;
+      document.getElementById('totalB').textContent = totalB;
+      
+      // Delta
+      const playerA = document.getElementById('playerA').value || 'Joueur A';
+      const playerB = document.getElementById('playerB').value || 'Joueur B';
+      const delta = totalA - totalB;
+      const deltaEl = document.getElementById('deltaText');
+      
+      if (totalA === 0 && totalB === 0) {
+        deltaEl.textContent = 'Entrez les scores';
+        deltaEl.className = '';
+      } else if (delta > 0) {
+        deltaEl.textContent = `${playerA} mène de ${delta} pts`;
+        deltaEl.className = 'delta-positive';
+      } else if (delta < 0) {
+        deltaEl.textContent = `${playerB} mène de ${Math.abs(delta)} pts`;
+        deltaEl.className = 'delta-negative';
+      } else {
+        deltaEl.textContent = 'Égalité parfaite';
+        deltaEl.className = 'delta-zero';
+      }
+      
+      // Analysis
+      updateAnalysis(scores, playerA, playerB);
+    }
+    
+    function getScore(prefix) {
+      const a = document.getElementById(prefix + '-a').value;
+      const b = document.getElementById(prefix + '-b').value;
+      if (a !== '' && b !== '') {
+        return `${a}-${b}`;
+      }
+      return null;
+    }
+    
+    function updateAnalysis(scores, playerA, playerB) {
+      const container = document.getElementById('analysisContent');
+      
+      if (!Object.values(scores).some(s => s !== null)) {
+        container.innerHTML = '<p class="placeholder">Entrez les scores pour voir l\'analyse</p>';
+        return;
+      }
+      
+      const result = analyzeMatch(scores, playerA, playerB);
+      let html = '';
+      
+      if (result.status === 'finished' && result.winner) {
+        html += `<div class="analysis-item winner">🏆 ${result.winner} remporte le match !</div>`;
+      } else if (result.status === 'gummiarm') {
+        html += `<div class="analysis-item gummiarm_scenario">⚡ GUMMIARM ! Un point décisif au tennis</div>`;
+      }
+      
+      html += `<div class="analysis-item">📊 Score: <strong>${result.totalA}</strong> - <strong>${result.totalB}</strong> (${result.sportsPlayed}/4 sports)</div>`;
+      
+      for (const item of result.analysis) {
+        html += `<div class="analysis-item ${item.type || ''}">${item.message}</div>`;
+      }
+      
+      container.innerHTML = html;
+    }
+    
+    // Event listeners
+    document.querySelectorAll('.score-input').forEach(input => {
+      input.addEventListener('input', () => {
+        if (input.value > 21) input.value = 21;
+        if (input.value < 0) input.value = 0;
+        update();
+      });
+      input.addEventListener('focus', () => input.select());
+    });
+    
+    document.getElementById('playerA').addEventListener('input', update);
+    document.getElementById('playerB').addEventListener('input', update);
+    
+    // Init
+    update();
+  </script>
 </body>
 </html>
