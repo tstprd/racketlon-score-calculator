@@ -77,11 +77,11 @@ function initScoreInputs() {
   // Quick 21 buttons
   const btn21s = document.querySelectorAll('.btn-21');
   btn21s.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const target = btn.dataset.target;
-      const cell = btn.closest('.score-cell');
-      const input = cell.querySelector(`.${target}`);
-      if (input) {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Find the input sibling (previous element)
+      const input = btn.previousElementSibling;
+      if (input && input.classList.contains('score-input')) {
         input.value = 21;
         updateTotals();
         updateAnalysis();
