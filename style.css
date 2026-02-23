@@ -325,6 +325,23 @@ header h1 {
   margin-top: var(--spacing);
 }
 
+.btn-clear {
+  width: 100%;
+  padding: 12px 20px;
+  background: transparent;
+  border: 2px solid var(--text-secondary);
+  border-radius: var(--border-radius);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-clear:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* OCR status */
 .ocr-status {
   display: flex;

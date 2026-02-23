@@ -88,6 +88,23 @@ function initScoreInputs() {
       }
     });
   });
+  
+  // Clear all button
+  document.getElementById('clearAll').addEventListener('click', () => {
+    // Clear player names
+    document.getElementById('playerA').value = '';
+    document.getElementById('playerB').value = '';
+    document.getElementById('headerA').textContent = 'A';
+    document.getElementById('headerB').textContent = 'B';
+    
+    // Clear all scores
+    document.querySelectorAll('.score-input').forEach(input => {
+      input.value = '';
+    });
+    
+    updateTotals();
+    updateAnalysis();
+  });
 }
 
 /**
