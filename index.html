@@ -331,14 +331,20 @@
           const leader = delta > 0 ? playerA : playerB;
           const trailer = delta > 0 ? playerB : playerA;
           
-          if (delta !== 0) {
-            // Le meneur (leader) doit limiter la casse
-            // Le poursuivant (trailer) doit gagner avec assez d'écart
-            const trailerNeedToWin = absDelta + 1; // écart minimum pour gagner
-            const leaderMaxToLose = 21 - trailerNeedToWin; // max que leader peut marquer si trailer fait 21
+          if (absDelta > 21) {
+            // Écart insurmontable même avec 21-0
+            html += `<div class="analysis-item winner">🏆 ${leader} a déjà gagné ! Même 21-0 ne suffit pas.</div>`;
+          } else if (absDelta === 21) {
+            // Seul un 21-0 permet le Gummiarm
+            html += `<div class="analysis-item scenario">🏆 ${leader} gagne sauf si ${trailer} fait 21-0</div>`;
+            html += `<div class="analysis-item gummiarm_scenario">⚡ Gummiarm uniquement si ${trailer} gagne 21-0</div>`;
+          } else if (delta !== 0) {
+            // Cas normal
+            const trailerNeedToWin = absDelta + 1;
+            const leaderMaxToLose = 21 - trailerNeedToWin;
             const gummiarmScore = 21 - absDelta;
             
-            html += `<div class="analysis-item scenario">🏆 ${trailer} doit marquer 21 pts et ${leader} doit marquer ${leaderMaxToLose} ou moins</div>`;
+            html += `<div class="analysis-item scenario">🏆 ${trailer} doit marquer 21 pts et ${leader} maximum ${leaderMaxToLose} pts</div>`;
             html += `<div class="analysis-item scenario">🏆 ${leader} gagne si marque ${leaderMaxToLose + 2}+ pts, ou gagne le set</div>`;
             html += `<div class="analysis-item gummiarm_scenario">⚡ Gummiarm si ${trailer} fait 21 et ${leader} fait ${gummiarmScore}</div>`;
           } else {
