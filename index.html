@@ -259,41 +259,6 @@
         border-color: #e94560;
         color: #e94560;
       }
-      .analysis-section {
-        background: #16213e;
-        border-radius: 12px;
-        padding: 16px;
-      }
-      .analysis-section h2 {
-        font-size: 1rem;
-        margin-bottom: 12px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #0f3460;
-      }
-      .analysis-item {
-        padding: 10px 12px;
-        margin-bottom: 8px;
-        background: #0f3460;
-        border-radius: 8px;
-        border-left: 4px solid #e94560;
-        font-size: 0.95rem;
-      }
-      .analysis-item.winner {
-        border-left-color: #00d26a;
-        background: rgba(0, 210, 106, 0.1);
-      }
-      .analysis-item.gummiarm_scenario {
-        border-left-color: #ffc107;
-        background: rgba(255, 193, 7, 0.1);
-      }
-      .analysis-item.scenario {
-        border-left-color: #00bcd4;
-      }
-      .placeholder {
-        color: #888;
-        text-align: center;
-        font-style: italic;
-      }
       footer {
         text-align: center;
         padding: 20px 0;
@@ -462,12 +427,6 @@
           <span id="deltaText">Entrez les scores</span>
         </div>
         <button class="btn-clear" onclick="clearAll()">🗑️ Effacer tout</button>
-        <section class="analysis-section">
-          <h2>📈 Analyse</h2>
-          <div id="analysisContent">
-            <p class="placeholder">Entrez les scores pour voir l'analyse</p>
-          </div>
-        </section>
       </main>
       <footer>
         <p>Racketlon Calc • <a href="https://www.racketlon.net" target="_blank">Règles FIR</a></p>
@@ -609,88 +568,6 @@
           deltaEl.className = "delta-zero";
         }
 
-        updateAnalysis(errors.length === 0 ? scores : {}, playerA, playerB, totalA, totalB);
-      }
-
-      function updateAnalysis(scores, playerA, playerB, totalA, totalB) {
-        const container = document.getElementById("analysisContent");
-        const sportsPlayed = Object.keys(scores).length;
-        const sportsRemaining = 4 - sportsPlayed;
-        const maxRemaining = sportsRemaining * 21;
-        const delta = totalA - totalB;
-
-        if (sportsPlayed === 0) {
-          container.innerHTML = '<p class="placeholder">Entrez des scores valides</p>';
-          return;
-        }
-
-        let html = `<div class="analysis-item">📊 Score: <strong>${totalA}</strong> - <strong>${totalB}</strong> (${sportsPlayed}/4 sports)</div>`;
-
-        if (sportsPlayed === 4) {
-          if (delta === 0) {
-            html += `<div class="analysis-item gummiarm_scenario">⚡ GUMMIARM ! Un point décisif au tennis</div>`;
-          } else {
-            const winner = delta > 0 ? playerA : playerB;
-            html += `<div class="analysis-item winner">🏆 ${winner} remporte le match !</div>`;
-          }
-        } else if (Math.abs(delta) > maxRemaining) {
-          const winner = delta > 0 ? playerA : playerB;
-          html += `<div class="analysis-item winner">🏆 ${winner} a déjà gagné ! Avance insurmontable.</div>`;
-        } else {
-          const nextSport = ["tabletennis", "badminton", "squash", "tennis"].find(
-            (s) => !scores[s],
-          );
-          const nextLabel = {
-            tabletennis: "Ping-pong",
-            badminton: "Badminton",
-            squash: "Squash",
-            tennis: "Tennis",
-          }[nextSport];
-
-          if (sportsRemaining === 1) {
-            // Tennis reste - groupé par joueur
-            const absDelta = Math.abs(delta);
-            const leader = delta > 0 ? playerA : playerB;
-            const trailer = delta > 0 ? playerB : playerA;
-
-            // Pour que trailer gagne: doit rattraper l'écart + 1
-            // Si trailer fait 21, leader max = 20 - absDelta
-            const leaderMaxForTrailerWin = 20 - absDelta;
-            const gummiarmLeaderScore = 21 - absDelta;
-
-            if (absDelta > 21) {
-              // Écart insurmontable
-              html += `<div class="analysis-item winner">🏆 ${leader} a déjà gagné ! Même 21-0 ne suffit pas.</div>`;
-            } else if (absDelta >= 21 || leaderMaxForTrailerWin < 0) {
-              // Trailer ne peut plus gagner, seul Gummiarm possible
-              html += `<div class="analysis-item scenario">🏆 ${trailer} ne peut pas gagner (sauf Gummiarm)</div>`;
-              html += `<div class="analysis-item gummiarm_scenario">⚡ Gummiarm si ${trailer} fait 21-0</div>`;
-              html += `<div class="analysis-item scenario">🏆 ${leader} gagne sinon</div>`;
-            } else if (delta !== 0) {
-              // Cas normal - groupé par joueur
-              const trailerMinToWin = leaderMaxForTrailerWin + 1; // trailer doit limiter leader à ce score - 1
-
-              html += `<div class="analysis-item scenario">🏆 <strong>${leader}</strong> gagne si marque ${leaderMaxForTrailerWin + 2}+ pts, ou gagne le set</div>`;
-              html += `<div class="analysis-item scenario">🏆 <strong>${trailer}</strong> gagne si gagne le tennis ET ${leader} marque ≤${leaderMaxForTrailerWin} pts</div>`;
-              html += `<div class="analysis-item gummiarm_scenario">⚡ Gummiarm si ${trailer} fait 21 et ${leader} fait ${gummiarmLeaderScore}</div>`;
-            } else {
-              // Égalité
-              html += `<div class="analysis-item scenario">🏆 Le gagnant du ${nextLabel} remporte le match !</div>`;
-              html += `<div class="analysis-item gummiarm_scenario">⚡ Gummiarm si égalité au ${nextLabel}</div>`;
-            }
-          } else if (sportsRemaining === 2) {
-            // Squash + Tennis restent
-            html += `<div class="analysis-item">🎯 Prochain : ${nextLabel}</div>`;
-            const skipThreshold = 22 - Math.abs(delta);
-            if (delta > 0 && skipThreshold <= 21) {
-              html += `<div class="analysis-item scenario">🏆 ${playerA} gagne SANS tennis si ${nextLabel} ≥ 21-${21 - skipThreshold}</div>`;
-            } else if (delta < 0 && skipThreshold <= 21) {
-              html += `<div class="analysis-item scenario">🏆 ${playerB} gagne SANS tennis si ${nextLabel} ≥ 21-${21 - skipThreshold}</div>`;
-            }
-          }
-        }
-
-        container.innerHTML = html;
       }
 
       document.querySelectorAll(".score-input").forEach((input) => {
