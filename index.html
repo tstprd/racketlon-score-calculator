@@ -198,16 +198,14 @@
         min-width: 50px;
         text-align: center;
       }
-      .delta-display {
-        background: #0f3460;
-        border-radius: 12px;
-        padding: 16px;
+      .delta-row {
         text-align: center;
-        margin-bottom: 16px;
+        padding: 12px 0 4px;
+        font-size: 0.95rem;
+        font-weight: 600;
       }
-      #deltaText {
-        font-size: 1.1rem;
-        font-weight: bold;
+      .delta-row.hidden {
+        display: none;
       }
       .delta-positive {
         color: #00d26a;
@@ -418,13 +416,13 @@
             <span class="score-sep">-</span>
             <span class="total-score" id="totalB">0</span>
           </div>
+          <div class="delta-row" id="deltaRow">
+            <span id="deltaText"></span>
+          </div>
         </div>
         <div id="errorsBox" class="errors-box hidden">
           <h3>⚠️ Scores invalides</h3>
           <ul id="errorsList"></ul>
-        </div>
-        <div class="delta-display">
-          <span id="deltaText">Entrez les scores</span>
         </div>
         <button class="btn-clear" onclick="clearAll()">🗑️ Effacer tout</button>
       </main>
@@ -552,20 +550,23 @@
         const playerA = document.getElementById("playerA").value || "Joueur A";
         const playerB = document.getElementById("playerB").value || "Joueur B";
         const delta = totalA - totalB;
+        const deltaRow = document.getElementById("deltaRow");
         const deltaEl = document.getElementById("deltaText");
 
         if (totalA === 0 && totalB === 0) {
-          deltaEl.textContent = "Entrez les scores";
-          deltaEl.className = "";
-        } else if (delta > 0) {
-          deltaEl.textContent = `${playerA} mène de ${delta} pts`;
-          deltaEl.className = "delta-positive";
-        } else if (delta < 0) {
-          deltaEl.textContent = `${playerB} mène de ${Math.abs(delta)} pts`;
-          deltaEl.className = "delta-negative";
+          deltaRow.classList.add("hidden");
         } else {
-          deltaEl.textContent = "Égalité parfaite";
-          deltaEl.className = "delta-zero";
+          deltaRow.classList.remove("hidden");
+          if (delta > 0) {
+            deltaEl.textContent = `${playerA} mène de ${delta} pts`;
+            deltaEl.className = "delta-positive";
+          } else if (delta < 0) {
+            deltaEl.textContent = `${playerB} mène de ${Math.abs(delta)} pts`;
+            deltaEl.className = "delta-negative";
+          } else {
+            deltaEl.textContent = "Égalité parfaite";
+            deltaEl.className = "delta-zero";
+          }
         }
 
       }
